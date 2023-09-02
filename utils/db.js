@@ -50,8 +50,8 @@ class DBClient {
     return user;
   }
 
-  async createFolder(_folderInfo) {
-    return await this.client.db().collection('files').insertOne(folderInfo);
+  async createFolder(folderInfo) {
+    return this.client.db().collection('files').insertOne(folderInfo);
   }
 
   async findFolder(_query) {
@@ -66,7 +66,7 @@ class DBClient {
   // }
 
   async createFile(fileInfo) {
-    return await this.client.db().collection('files').insertOne(fileInfo);
+    return this.client.db().collection('files').insertOne(fileInfo);
   }
 }
 
