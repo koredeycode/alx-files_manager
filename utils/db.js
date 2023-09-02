@@ -1,4 +1,3 @@
-// import * as dotenv from 'dotenv';
 import sha1 from 'sha1';
 import { MongoClient, ObjectId } from 'mongodb';
 import envLoader from './env_loader';
