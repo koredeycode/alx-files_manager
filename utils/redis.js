@@ -10,7 +10,7 @@ class RedisClient {
       this.isClientConnected = false;
     });
     this.client.on('connect', () => {
-      console.log('Redis client connected to the server');
+      // console.log('Redis client connected to the server');
       this.isClientConnected = true;
     });
   }
@@ -32,5 +32,5 @@ class RedisClient {
     await promisify(this.client.del).bind(this.client)(key);
   }
 }
-const redisClient = new RedisClient();
+export const redisClient = new RedisClient();
 export default redisClient;
