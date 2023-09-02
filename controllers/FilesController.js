@@ -17,16 +17,18 @@ class FilesController {
     const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
     const { name, type, parentId, isPublic, data } = req.body;
     const { user } = req.user;
+    console.log(user);
     const userId = user._id.toString();
-    if (!name) return res.status(400).send({ error: 'Missing name' });
-    if (!type) return res.status(400).send({ error: 'Missing type' });
+    if (!name) return res.status(400).json({ error: 'Missing name' });
+    if (!type) return res.status(400).json({ error: 'Missing type' });
     if (!data && type != 'folder')
-      return res.status(400).send({ error: 'Missing data' });
+      return res.status(400).json({ error: 'Missing data' });
     if (parentId) {
-      const folder = await dbClient.findFolder({ parentId });
-      if (!folder) return res.status(400).send({ error: 'Parent not found' });
+      const folder = await dbClient.findFolder({ _id: parentId });
+      console.log(folder);
+      if (!folder) return res.status(400).json({ error: 'Parent not found' });
       if (folder.type != 'folder')
-        return res.status(400).send({ error: 'Parent is not a folder' });
+        return res.status(400).json({ error: 'Parent is not a folder' });
     }
     if (type === 'folder') {
       const folderInfo = {
@@ -37,7 +39,8 @@ class FilesController {
         parentId: parentId || 0,
       };
       const { insertedId } = await dbClient.createFolder(folderInfo);
-      return res.status(201).send({ id: insertedId, ...folderInfo });
+      delete folderInfo._id;
+      return res.status(201).json({ id: insertedId, ...folderInfo });
     }
     if (type == 'file' || type == 'image') {
       makeDirectory(FOLDER_PATH);
@@ -51,7 +54,8 @@ class FilesController {
         localPath,
       };
       const { insertedId } = await dbClient.createFile(fileInfo);
-      return res.status(201).send({ id: insertedId, ...fileInfo });
+      delete fileInfo._id;
+      return res.status(201).json({ id: insertedId, ...fileInfo });
     }
   }
 }
