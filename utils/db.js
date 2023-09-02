@@ -39,7 +39,7 @@ class DBClient {
 
   async createUser(email, password) {
     const user = await this.client.db().collection('users').findOne({ email });
-    if (user) throw Error('Already exists');
+    if (user) throw Error('Already exist');
     const hashedPwd = sha1(password);
     return this.client
       .db()
