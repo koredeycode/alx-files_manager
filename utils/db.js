@@ -6,13 +6,13 @@ dotenv.config();
 
 class DBClient {
   constructor() {
-    const host = process.env.DB_HOST || 'localhost';
-    const port = process.env.DB_PORT || 27017;
+    // const host = process.env.DB_HOST || 'localhost';
+    // const port = process.env.DB_PORT || 27017;
     const database = process.env.DB_DATABASE || 'files_manager';
-    const url = `mongodb://${host}:${port}/${database}`;
-    // const user = process.env.CLUSTER_USER;
-    // const pwd = process.env.CLUSTER_PWD;
-    // const url = `mongodb+srv://${user}:${pwd}@cluster0.l5awlge.mongodb.net/${database}`;
+    // const url = `mongodb://${host}:${port}/${database}`;
+    const user = process.env.CLUSTER_USER;
+    const pwd = process.env.CLUSTER_PWD;
+    const url = `mongodb+srv://${user}:${pwd}@cluster0.l5awlge.mongodb.net/${database}`;
 
     this.client = new MongoClient(url, {
       useNewUrlParser: true,
@@ -61,12 +61,32 @@ class DBClient {
     return folder;
   }
 
-  // async findFilesOfFolder(folderId) {
-  //   // continue;
-  // }
+  async findFile(_query) {
+    const query = _query;
+    if (query._id) query._id = ObjectId(query._id);
+    const file = await this.client
+      .db()
+      .collection('files')
+      .findOne(query, { _id: 0, id: '$_id' });
+    return file;
+  }
+
+  async findFiles(pipeline) {
+    return this.client.db().collection('files').aggregate(pipeline).toArray();
+  }
 
   async createFile(fileInfo) {
     return this.client.db().collection('files').insertOne(fileInfo);
+  }
+
+  async updateFile(id, update) {
+    const newUpdate = { $set: update };
+    const query = { _id: ObjectId(id) };
+    const file = await this.client
+      .db()
+      .collection('files')
+      .updateOne(query, newUpdate);
+    return file;
   }
 }
 

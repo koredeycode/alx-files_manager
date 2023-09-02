@@ -58,6 +58,58 @@ class FilesController {
       return res.status(201).json({ id: insertedId, ...fileInfo });
     }
   }
+
+  static async getShow(req, res) {
+    const { id } = req.params;
+    const { user } = req.user;
+    const userId = user._id.toString();
+    const file = await dbClient.findFile({ _id: id, userId });
+    console.log(file);
+    if (!file) return res.status(404).json({ error: 'Not found' });
+    return res.json(file);
+  }
+
+  static async getIndex(req, res) {
+    let { parentId, page } = req.query;
+    parentId = parentId || 0;
+    const { user } = req.user;
+    const userId = user._id.toString();
+
+    const pageSize = 20;
+    const pageNumber = Number(page) || 0;
+    const skip = pageSize * pageNumber;
+
+    const pipeline = [
+      { $match: { userId, parentId } },
+      { $skip: skip },
+      { $limit: pageSize },
+    ];
+
+    const query = { userId };
+    if (parentId) query.parentId = parentId;
+    const files = await dbClient.findFiles(pipeline);
+    return res.json(files);
+  }
+
+  static async putPublish(req, res) {
+    const { id } = req.params;
+    const { user } = req.user;
+    const userId = user._id.toString();
+    const file = await dbClient.findFile({ _id: id, userId });
+    if (!file) return res.status(404).json({ error: 'Not found' });
+    await dbClient.updateFile(id, { isPublic: true });
+    return res.json({ id, name: file.name, type: file.type, isPublic: true });
+  }
+
+  static async putUnpublish(req, res) {
+    const { id } = req.params;
+    const { user } = req.user;
+    const userId = user._id.toString();
+    const file = await dbClient.findFile({ _id: id, userId });
+    if (!file) return res.status(404).json({ error: 'Not found' });
+    await dbClient.updateFile(id, { isPublic: false });
+    return res.json({ id, name: file.name, type: file.type, isPublic: false });
+  }
 }
 
 export default FilesController;
