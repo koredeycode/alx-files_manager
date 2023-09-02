@@ -2,9 +2,9 @@
 import dbClient from '../utils/db';
 import { v4 as uuidv4 } from 'uuid';
 import { makeDirectory, saveFileLocally } from '../utils/file';
-import * as dotenv from 'dotenv';
+import envLoader from '../utils/env_loader';
 
-dotenv.config();
+envLoader();
 
 const FILETYPES = {
   folder: 'folder',

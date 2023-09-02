@@ -5,7 +5,6 @@ import envLoader from './env_loader';
 class DBClient {
   constructor() {
     envLoader();
-    console.log(process.env);
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.DB_PORT || 27017;
     const database = process.env.DB_DATABASE || 'files_manager';
