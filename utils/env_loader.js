@@ -1,9 +1,8 @@
 import { existsSync, readFileSync } from 'fs';
 
 function envLoader() {
-  const env = process.env.npm_lifecycle_event || 'dev';
-  const path =
-    env.includes('test') || env.includes('cover') ? '.env.test' : '.env';
+  const e = process.env.npm_lifecycle_event || 'dev';
+  const path = e.includes('test') || e.includes('cover') ? '.env.test' : '.env';
 
   if (existsSync(path)) {
     const data = readFileSync(path, 'utf-8').trim().split('\n');
