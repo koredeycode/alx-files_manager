@@ -6,8 +6,9 @@ export async function getUserFromAuthorization(req) {
   const authorization = req.headers.authorization || null;
   if (!authorization) return null;
   const authorizationParts = authorization.split(' ');
-  if (authorizationParts.length !== 2 || authorizationParts[0] !== 'Basic')
+  if (authorizationParts.length !== 2 || authorizationParts[0] !== 'Basic') {
     return null;
+  }
   const credential = Buffer.from(authorizationParts[1], 'base64').toString();
   const separator = credential.indexOf(':');
   const email = credential.substring(0, separator);
