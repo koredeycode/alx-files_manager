@@ -1,13 +1,12 @@
-import * as dotenv from 'dotenv';
+// import * as dotenv from 'dotenv';
 import sha1 from 'sha1';
 import { MongoClient, ObjectId } from 'mongodb';
-
-dotenv.config({
-  path: process.env.npm_lifecycle_event.includes('test') ? '.env.test' : '.env',
-});
+import envLoader from './env_loader';
 
 class DBClient {
   constructor() {
+    envLoader();
+    console.log(process.env);
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.DB_PORT || 27017;
     const database = process.env.DB_DATABASE || 'files_manager';
