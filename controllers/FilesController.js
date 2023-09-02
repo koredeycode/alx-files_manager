@@ -6,13 +6,18 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
+const FILETYPES = {
+  folder: 'folder',
+  file: 'file',
+  image: 'image',
+};
 
 class FilesController {
   static async postUpload(req, res) {
+    const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
     const { name, type, parentId, isPublic, data } = req.body;
     const { user } = req.user;
-    userId = user._id;
+    const userId = user._id.toString();
     if (!name) return res.status(400).send({ error: 'Missing name' });
     if (!type) return res.status(400).send({ error: 'Missing type' });
     if (!data && type != 'folder')
@@ -24,26 +29,30 @@ class FilesController {
         return res.status(400).send({ error: 'Parent is not a folder' });
     }
     if (type === 'folder') {
-      const newFolder = await dbClient.createFolder({
+      const folderInfo = {
         userId,
         name,
         type,
         isPublic: isPublic || false,
         parentId: parentId || 0,
-      });
-      return res.status(201).send(newFolder);
+      };
+      const { insertedId } = await dbClient.createFolder(folderInfo);
+      return res.status(201).send({ id: insertedId, ...folderInfo });
     }
-    const localPath = `${FOLDER_PATH}/${uuidv4()}`;
-    // const buff = Buffer.from(data, 'base64');
-    //store the file
-    const newFile = await dbClient.createFile({
-      userId,
-      name,
-      type,
-      isPublic: isPublic || false,
-      parentId: parentId || 0,
-      localPath,
-    });
+    if (type == 'file' || type == 'image') {
+      makeDirectory(FOLDER_PATH);
+      const localPath = await saveFileLocally(FOLDER_PATH, uuidv4(), data);
+      const fileInfo = {
+        userId,
+        name,
+        type,
+        isPublic: isPublic || false,
+        parentId: parentId || 0,
+        localPath,
+      };
+      const { insertedId } = await dbClient.createFile(fileInfo);
+      return res.status(201).send({ id: insertedId, ...fileInfo });
+    }
   }
 }
 

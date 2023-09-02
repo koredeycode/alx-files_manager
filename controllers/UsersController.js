@@ -7,10 +7,7 @@ class UsersController {
     if (!email) return res.status(400).json({ error: 'Missing email' });
     if (!password) return res.status(400).json({ error: 'Missing password' });
     try {
-      const { insertedId, ...others } = await dbClient.createUser(
-        email,
-        password,
-      );
+      const { insertedId } = await dbClient.createUser(email, password);
       return res.status(201).json({ email, id: insertedId });
     } catch (err) {
       return res.status(400).json({ error: err.message });

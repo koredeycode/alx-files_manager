@@ -50,17 +50,9 @@ class DBClient {
     return user;
   }
 
-  // async createFolder(userId, name, type, isPublic, parentId) {
-  //   const file = await this.client.db().collection('files').insertOne({
-  //     userId,
-  //     name,
-  //     type,
-  //     isPublic,
-  //     parentId,
-  //     localPath,
-  //   });
-  //   return file;
-  // }
+  async createFolder(folderInfo) {
+    return await this.client.db().collection('files').insertOne(folderInfo);
+  }
 
   // async findFolder(query) {
   //   const folder = await this.client.db().collection('files').find(query);
@@ -71,17 +63,9 @@ class DBClient {
   //   // continue;
   // }
 
-  // async createFile(userId, name, type, isPublic, parentId, localPath) {
-  //   const file = await this.client.db().collection('files').insertOne({
-  //     userId,
-  //     name,
-  //     type,
-  //     isPublic,
-  //     parentId,
-  //     localPath,
-  //   });
-  //   return file;
-  // }
+  async createFile(fileInfo) {
+    return await this.client.db().collection('files').insertOne(fileInfo);
+  }
 }
 
 const dbClient = new DBClient();
