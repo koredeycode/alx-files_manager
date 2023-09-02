@@ -2,6 +2,9 @@
 import dbClient from '../utils/db';
 import { v4 as uuidv4 } from 'uuid';
 import { makeDirectory, saveFileLocally } from '../utils/file';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
 

@@ -1,12 +1,17 @@
 const { MongoClient, ObjectId } = require('mongodb');
 import sha1 from 'sha1';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 class DBClient {
   constructor() {
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.DB_PORT || 27017;
     const database = process.env.DB_DATABASE || 'files_manager';
-    const url = `mongodb+srv://tunny:Yusuf-2706@cluster0.l5awlge.mongodb.net/${database}`;
+    const user = process.env.CLUSTER_USER;
+    const pwd = process.env.CLUSTER_PWD;
+    const url = `mongodb+srv://${user}:${pwd}@cluster0.l5awlge.mongodb.net/${database}`;
     // const url = `mongodb://${host}:${port}/${database}`;
     this.client = new MongoClient(url, {
       useNewUrlParser: true,
