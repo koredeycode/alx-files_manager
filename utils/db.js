@@ -87,13 +87,30 @@ class DBClient {
     const filters = { userId };
     console.log(parentId);
 
-    // filters.parentId = parentId === '0' ? '0' : ObjectId(parentId);
-    filters.parentId =
-      !parentId && parentId !== ''
-        ? parentId === '0'
-          ? '0'
-          : ObjectId(parentId)
-        : ObjectId(NULL_ID);
+    // if (parentId !== undefined) {
+    //   filters.parentId =
+    //     !parentId && parentId !== ''
+    //       ? parentId === '0'
+    //         ? '0'
+    //         : ObjectId(parentId)
+    //       : ObjectId(NULL_ID);
+    // }
+
+    if (parentId !== undefined) {
+      if (parentId === '' || parentId === '0') {
+        filters.parentId = '0';
+      } else {
+        try {
+          filters.parentId = ObjectId(parentId);
+        } catch (error) {
+          // Handle the case where ObjectId conversion fails (invalid parentId)
+          // console.error('Invalid parentId:', parentId);
+          filters.parentId = ObjectId(NULL_ID);
+        }
+      }
+    }
+
+    console.log(filters);
 
     const pipeline = [
       {
