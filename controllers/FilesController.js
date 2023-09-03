@@ -109,21 +109,35 @@ class FilesController {
   static async putPublish(req, res) {
     const { id } = req.params;
     const { user } = req.user;
-    const userId = user._id.toString();
+    const userId = user._id;
     const file = await dbClient.findFile({ _id: id, userId });
     if (!file) return res.status(404).json({ error: 'Not found' });
     await dbClient.updateFile(id, { isPublic: true });
-    return res.json({ id, name: file.name, type: file.type, isPublic: true });
+    return res.json({
+      id,
+      name: file.name,
+      type: file.type,
+      isPublic: true,
+      userId: userId.toString(),
+      parentId: file.parentId === '0' ? 0 : file.parentId.toString(),
+    });
   }
 
   static async putUnpublish(req, res) {
     const { id } = req.params;
     const { user } = req.user;
-    const userId = user._id.toString();
+    const userId = user._id;
     const file = await dbClient.findFile({ _id: id, userId });
     if (!file) return res.status(404).json({ error: 'Not found' });
     await dbClient.updateFile(id, { isPublic: false });
-    return res.json({ id, name: file.name, type: file.type, isPublic: false });
+    return res.json({
+      id,
+      userId: userId.toString(),
+      name: file.name,
+      type: file.type,
+      isPublic: false,
+      parentId: file.parentId === '0' ? 0 : file.parentId.toString(),
+    });
   }
 }
 

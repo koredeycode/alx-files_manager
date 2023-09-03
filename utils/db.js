@@ -6,6 +6,14 @@ import envLoader from './env_loader';
 
 const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 
+function myObjectId(id) {
+  try {
+    return ObjectId(id);
+  } catch (error) {
+    return ObjectId(NULL_ID);
+  }
+}
+
 class DBClient {
   constructor() {
     envLoader();
@@ -71,14 +79,14 @@ class DBClient {
 
   async findFolder(_query) {
     const query = _query;
-    if (query._id) query._id = ObjectId(query._id);
+    if (query._id) query._id = myObjectId(query._id);
     const folder = await this.client.db().collection('files').findOne(query);
     return folder;
   }
 
   async findFile(_query) {
     const query = _query;
-    if (query._id) query._id = ObjectId(query._id);
+    if (query._id) query._id = myObjectId(query._id);
     const file = await this.client.db().collection('files').findOne(query);
     return file;
   }
@@ -91,11 +99,7 @@ class DBClient {
       if (parentId === '' || parentId === '0') {
         filters.parentId = '0';
       } else {
-        try {
-          filters.parentId = ObjectId(parentId);
-        } catch (error) {
-          filters.parentId = ObjectId(NULL_ID);
-        }
+        filters.parentId = myObjectId(parentId);
       }
     }
 
