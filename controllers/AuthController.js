@@ -16,11 +16,6 @@ class AuthController {
     await redisClient.del(`auth_${token}`);
     res.status(204).send();
   }
-
-  static getMe(req, res) {
-    const { user } = req.user;
-    res.status(200).json({ email: user.email, id: user._id.toString() });
-  }
 }
 
 export default AuthController;

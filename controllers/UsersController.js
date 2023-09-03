@@ -7,12 +7,17 @@ class UsersController {
     const { email, password } = req.body;
     if (!email) return res.status(400).json({ error: 'Missing email' });
     if (!password) return res.status(400).json({ error: 'Missing password' });
-    try {
-      const { insertedId } = await dbClient.createUser(email, password);
-      return res.status(201).json({ email, id: insertedId });
-    } catch (err) {
-      return res.status(400).json({ error: err.message });
+    const user = await dbClient.findUser({ email });
+    if (user) {
+      return res.status(400).json({ error: 'Already exist' });
     }
+    const { insertedId } = await dbClient.createUser(email, password);
+    return res.status(201).json({ email, id: insertedId });
+  }
+
+  static getMe(req, res) {
+    const { user } = req.user;
+    res.status(200).json({ email: user.email, id: user._id.toString() });
   }
 }
 
