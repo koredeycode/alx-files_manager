@@ -9,21 +9,22 @@ import envLoader from '../utils/env_loader';
 
 envLoader();
 
-// const FILETYPES = {
-//   folder: 'folder',
-//   file: 'file',
-//   image: 'image',
-// };
+const FILETYPES = {
+  folder: 'folder',
+  file: 'file',
+  image: 'image',
+};
+const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 
 class FilesController {
   static async postUpload(req, res) {
     const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
     const { name, type, parentId, isPublic, data } = req.body;
     const { user } = req.user;
-    console.log(user);
     const userId = user._id.toString();
     if (!name) return res.status(400).json({ error: 'Missing name' });
-    if (!type) return res.status(400).json({ error: 'Missing type' });
+    if (!type || !Object.values(FILETYPES).includes(type))
+      return res.status(400).json({ error: 'Missing type' });
     if (!data && type !== 'folder') {
       return res.status(400).json({ error: 'Missing data' });
     }
@@ -41,13 +42,16 @@ class FilesController {
         name,
         type,
         isPublic: isPublic || false,
-        parentId: parentId || 0,
+        parentId: parentId || '0',
       };
       const { insertedId } = await dbClient.createFolder(folderInfo);
       delete folderInfo._id;
+      if (folderInfo.parentId === '0') {
+        folderInfo.parentId = 0;
+      }
       return res.status(201).json({ id: insertedId, ...folderInfo });
     }
-    if (type !== 'file' || type !== 'image') {
+    if (type !== 'file' && type !== 'image') {
       return res.status(400).json({ error: 'Incorrect file type' });
     }
     makeDirectory(FOLDER_PATH);
@@ -57,11 +61,15 @@ class FilesController {
       name,
       type,
       isPublic: isPublic || false,
-      parentId: parentId || 0,
+      parentId: parentId || '0',
       localPath,
     };
     const { insertedId } = await dbClient.createFile(fileInfo);
     delete fileInfo._id;
+    delete fileInfo.localPath;
+    if (fileInfo.parentId === '0') {
+      fileInfo.parentId = 0;
+    }
     return res.status(201).json({ id: insertedId, ...fileInfo });
   }
 

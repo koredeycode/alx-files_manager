@@ -54,7 +54,14 @@ class DBClient {
     return user;
   }
 
-  async createFolder(folderInfo) {
+  async createFolder(_folderInfo) {
+    const folderInfo = _folderInfo;
+    if (folderInfo.parentId && folderInfo.parentId !== '0') {
+      folderInfo.parentId = ObjectId(folderInfo.parentId);
+    }
+    if (folderInfo.userId) {
+      folderInfo.userId = ObjectId(folderInfo.userId);
+    }
     return this.client.db().collection('files').insertOne(folderInfo);
   }
 
@@ -79,7 +86,14 @@ class DBClient {
     return this.client.db().collection('files').aggregate(pipeline).toArray();
   }
 
-  async createFile(fileInfo) {
+  async createFile(_fileInfo) {
+    const fileInfo = _fileInfo;
+    if (fileInfo.parentId && fileInfo.parentId !== '0') {
+      fileInfo.parentId = ObjectId(fileInfo.parentId);
+    }
+    if (fileInfo.userId) {
+      fileInfo.userId = ObjectId(fileInfo.userId);
+    }
     return this.client.db().collection('files').insertOne(fileInfo);
   }
 
