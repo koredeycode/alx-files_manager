@@ -14,7 +14,7 @@ const FILETYPES = {
   file: 'file',
   image: 'image',
 };
-const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
+// const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 
 class FilesController {
   static async postUpload(req, res) {
@@ -23,8 +23,9 @@ class FilesController {
     const { user } = req.user;
     const userId = user._id.toString();
     if (!name) return res.status(400).json({ error: 'Missing name' });
-    if (!type || !Object.values(FILETYPES).includes(type))
+    if (!type || !Object.values(FILETYPES).includes(type)) {
       return res.status(400).json({ error: 'Missing type' });
+    }
     if (!data && type !== 'folder') {
       return res.status(400).json({ error: 'Missing data' });
     }
