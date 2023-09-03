@@ -1,6 +1,10 @@
+/* eslint-disable operator-linebreak */
+/* eslint-disable no-nested-ternary */
 import sha1 from 'sha1';
 import { MongoClient, ObjectId } from 'mongodb';
 import envLoader from './env_loader';
+
+const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 
 class DBClient {
   constructor() {
@@ -75,14 +79,47 @@ class DBClient {
   async findFile(_query) {
     const query = _query;
     if (query._id) query._id = ObjectId(query._id);
-    const file = await this.client
-      .db()
-      .collection('files')
-      .findOne(query, { _id: 0, id: '$_id' });
+    const file = await this.client.db().collection('files').findOne(query);
     return file;
   }
 
-  async findFiles(pipeline) {
+  async findFiles(userId, parentId, skip, pageSize) {
+    const filters = { userId };
+    console.log(parentId);
+
+    // filters.parentId = parentId === '0' ? '0' : ObjectId(parentId);
+    filters.parentId =
+      !parentId && parentId !== ''
+        ? parentId === '0'
+          ? '0'
+          : ObjectId(parentId)
+        : ObjectId(NULL_ID);
+
+    const pipeline = [
+      {
+        $match: filters,
+      },
+      { $skip: skip },
+      { $limit: pageSize },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          userId: '$userId',
+          name: '$name',
+          type: '$type',
+          isPublic: '$isPublic',
+          parentId: {
+            $cond: {
+              if: { $eq: ['$parentId', '0'] },
+              then: 0,
+              else: '$parentId',
+            },
+          },
+        },
+      },
+    ];
+
     return this.client.db().collection('files').aggregate(pipeline).toArray();
   }
 
