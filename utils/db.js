@@ -87,15 +87,6 @@ class DBClient {
     const filters = { userId };
     console.log(parentId);
 
-    // if (parentId !== undefined) {
-    //   filters.parentId =
-    //     !parentId && parentId !== ''
-    //       ? parentId === '0'
-    //         ? '0'
-    //         : ObjectId(parentId)
-    //       : ObjectId(NULL_ID);
-    // }
-
     if (parentId !== undefined) {
       if (parentId === '' || parentId === '0') {
         filters.parentId = '0';
@@ -103,8 +94,6 @@ class DBClient {
         try {
           filters.parentId = ObjectId(parentId);
         } catch (error) {
-          // Handle the case where ObjectId conversion fails (invalid parentId)
-          // console.error('Invalid parentId:', parentId);
           filters.parentId = ObjectId(NULL_ID);
         }
       }

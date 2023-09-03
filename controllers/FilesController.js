@@ -94,12 +94,12 @@ class FilesController {
 
   static async getIndex(req, res) {
     let { parentId, page } = req.query;
+    page = /\d+/.test((page || '').toString()) ? Number.parseInt(page, 10) : 0;
     const { user } = req.user;
     const userId = user._id;
 
     const pageSize = 20;
-    const pageNumber = Number(page) || 0;
-    const skip = pageSize * pageNumber;
+    const skip = pageSize * page;
 
     // parentId = parentId || '0';
     const files = await dbClient.findFiles(userId, parentId, skip, pageSize);
