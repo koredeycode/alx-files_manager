@@ -2,10 +2,17 @@
 /* eslint-disable object-curly-newline */
 /* eslint-disable prefer-const */
 // import redisClient from '../utils/redis';
+import { contentType } from 'mime-types';
 import { v4 as uuidv4 } from 'uuid';
 import dbClient from '../utils/db';
-import { makeDirectory, saveFileLocally } from '../utils/file';
+import {
+  makeDirectory,
+  saveFileLocally,
+  checkFile,
+  getAbsFilePath,
+} from '../utils/file';
 import envLoader from '../utils/env_loader';
+import { getUserFromToken } from '../utils/auth';
 
 envLoader();
 
@@ -138,6 +145,30 @@ class FilesController {
       isPublic: false,
       parentId: file.parentId === '0' ? 0 : file.parentId.toString(),
     });
+  }
+
+  static async getFile(req, res) {
+    const { id } = req.params;
+    const user = await getUserFromToken(req);
+    const userId = user ? user._id.toString() : '';
+    const file = await dbClient.findFile({ _id: id });
+    console.log(file);
+    if (!file || (!file.isPublic && file.userId.toString() !== userId)) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    if (file.type === 'folder') {
+      return res.status(400).json({ error: "A folder doesn't have content" });
+    }
+    const isValid = await checkFile(file.localPath);
+    if (!isValid) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    const absolutePath = await getAbsFilePath(file.localPath);
+    res.setHeader(
+      'Content-Type',
+      contentType(file.name) || 'text/plain; charset=utf-8',
+    );
+    return res.status(200).sendFile(absolutePath);
   }
 }
 

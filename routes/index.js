@@ -13,6 +13,7 @@ function mapRoutes(app) {
   app.get('/users/me', [tokenAuth], UsersController.getMe);
   app.post('/files', [tokenAuth], FilesController.postUpload);
   app.get('/files/:id', [tokenAuth], FilesController.getShow);
+  app.get('/files/:id/data', FilesController.getFile);
   app.get('/files', [tokenAuth], FilesController.getIndex);
   app.put('/files/:id/publish', [tokenAuth], FilesController.putPublish);
   app.put('/files/:id/unpublish', [tokenAuth], FilesController.putUnpublish);
