@@ -17,7 +17,7 @@ class UsersController {
 
   static getMe(req, res) {
     const { user } = req.user;
-    res.status(200).json({ email: user.email, id: user._id.toString() });
+    res.status(200).json({ id: user._id.toString(), email: user.email });
   }
 }
 
