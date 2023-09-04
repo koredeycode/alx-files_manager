@@ -85,7 +85,7 @@ class FilesController {
     if (fileInfo.parentId === '0') {
       fileInfo.parentId = 0;
     }
-    if (type === image) {
+    if (type === 'image') {
       fileQueue.add({ fileId: insertedId, userId: user._id });
     }
     return res.status(201).json({ id: insertedId, ...fileInfo });
