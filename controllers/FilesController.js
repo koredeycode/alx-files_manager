@@ -2,6 +2,7 @@
 /* eslint-disable object-curly-newline */
 /* eslint-disable prefer-const */
 // import redisClient from '../utils/redis';
+import Queue from 'bull';
 import { contentType } from 'mime-types';
 import { v4 as uuidv4 } from 'uuid';
 import dbClient from '../utils/db';
@@ -21,6 +22,8 @@ const FILETYPES = {
   file: 'file',
   image: 'image',
 };
+
+const fileQueue = new Queue('thumbnail generation');
 // const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 
 class FilesController {
@@ -63,7 +66,11 @@ class FilesController {
       return res.status(400).json({ error: 'Incorrect file type' });
     }
     makeDirectory(FOLDER_PATH);
-    const localPath = await saveFileLocally(FOLDER_PATH, uuidv4(), data);
+    const localPath = await saveFileLocally(
+      FOLDER_PATH,
+      uuidv4(),
+      Buffer.from(data, 'base64'),
+    );
     const fileInfo = {
       userId,
       name,
@@ -77,6 +84,9 @@ class FilesController {
     delete fileInfo.localPath;
     if (fileInfo.parentId === '0') {
       fileInfo.parentId = 0;
+    }
+    if (type === image) {
+      fileQueue.add({ fileId: insertedId, userId: user._id });
     }
     return res.status(201).json({ id: insertedId, ...fileInfo });
   }
@@ -149,6 +159,7 @@ class FilesController {
 
   static async getFile(req, res) {
     const { id } = req.params;
+    let { size } = req.query;
     const user = await getUserFromToken(req);
     const userId = user ? user._id.toString() : '';
     const file = await dbClient.findFile({ _id: id });
@@ -159,11 +170,15 @@ class FilesController {
     if (file.type === 'folder') {
       return res.status(400).json({ error: "A folder doesn't have content" });
     }
-    const isValid = await checkFile(file.localPath);
+    let filePath = file.localPath;
+    if (size) {
+      filePath = `${file.localPath}_${size}`;
+    }
+    const isValid = await checkFile(filePath);
     if (!isValid) {
       return res.status(404).json({ error: 'Not found' });
     }
-    const absolutePath = await getAbsFilePath(file.localPath);
+    const absolutePath = await getAbsFilePath(filePath);
     res.setHeader(
       'Content-Type',
       contentType(file.name) || 'text/plain; charset=utf-8',

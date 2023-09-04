@@ -13,8 +13,11 @@ export async function makeDirectory(dir) {
 }
 
 export async function saveFileLocally(baseDir, filename, data) {
-  const localPath = join(baseDir, filename);
-  await writeFileAsync(localPath, Buffer.from(data, 'base64'));
+  let localPath = filename;
+  if (baseDir === null) {
+    localPath = join(baseDir, filename);
+  }
+  await writeFileAsync(localPath, data);
   return localPath;
 }
 
