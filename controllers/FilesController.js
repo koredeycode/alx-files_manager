@@ -24,27 +24,34 @@ const FILETYPES = {
 };
 
 const fileQueue = new Queue('thumbnail generation');
-// const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 
 class FilesController {
   static async postUpload(req, res) {
     const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
     const { name, type, parentId, isPublic, data } = req.body;
-    const { user } = req.user;
+    const { user } = req;
     const userId = user._id.toString();
-    if (!name) return res.status(400).json({ error: 'Missing name' });
+    if (!name) {
+      res.status(400).json({ error: 'Missing name' });
+      return;
+    }
     if (!type || !Object.values(FILETYPES).includes(type)) {
-      return res.status(400).json({ error: 'Missing type' });
+      res.status(400).json({ error: 'Missing type' });
+      return;
     }
     if (!data && type !== 'folder') {
-      return res.status(400).json({ error: 'Missing data' });
+      res.status(400).json({ error: 'Missing data' });
+      return;
     }
     if (parentId) {
       const folder = await dbClient.findFolder({ _id: parentId });
-      console.log(folder);
-      if (!folder) return res.status(400).json({ error: 'Parent not found' });
+      if (!folder) {
+        res.status(400).json({ error: 'Parent not found' });
+        return;
+      }
       if (folder.type !== 'folder') {
-        return res.status(400).json({ error: 'Parent is not a folder' });
+        res.status(400).json({ error: 'Parent is not a folder' });
+        return;
       }
     }
     if (type === 'folder') {
@@ -60,10 +67,12 @@ class FilesController {
       if (folderInfo.parentId === '0') {
         folderInfo.parentId = 0;
       }
-      return res.status(201).json({ id: insertedId, ...folderInfo });
+      res.status(201).json({ id: insertedId, ...folderInfo });
+      return;
     }
     if (type !== 'file' && type !== 'image') {
-      return res.status(400).json({ error: 'Incorrect file type' });
+      res.status(400).json({ error: 'Incorrect file type' });
+      return;
     }
     makeDirectory(FOLDER_PATH);
     const localPath = await saveFileLocally(
@@ -88,18 +97,21 @@ class FilesController {
     if (type === 'image') {
       fileQueue.add({ fileId: insertedId, userId: user._id });
     }
-    return res.status(201).json({ id: insertedId, ...fileInfo });
+    res.status(201).json({ id: insertedId, ...fileInfo });
   }
 
   static async getShow(req, res) {
     const { id } = req.params;
-    const { user } = req.user;
+    const { user } = req;
     const userId = user._id;
     const file = await dbClient.findFile({ _id: id, userId });
     console.log(file);
-    if (!file) return res.status(404).json({ error: 'Not found' });
+    if (!file) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
 
-    return res.json({
+    res.json({
       id,
       userId: userId.toString(),
       name: file.name,
@@ -112,25 +124,27 @@ class FilesController {
   static async getIndex(req, res) {
     let { parentId, page } = req.query;
     page = /\d+/.test((page || '').toString()) ? Number.parseInt(page, 10) : 0;
-    const { user } = req.user;
+    const { user } = req;
     const userId = user._id;
 
     const pageSize = 20;
     const skip = pageSize * page;
 
-    // parentId = parentId || '0';
     const files = await dbClient.findFiles(userId, parentId, skip, pageSize);
-    return res.json(files);
+    res.json(files);
   }
 
   static async putPublish(req, res) {
     const { id } = req.params;
-    const { user } = req.user;
+    const { user } = req;
     const userId = user._id;
     const file = await dbClient.findFile({ _id: id, userId });
-    if (!file) return res.status(404).json({ error: 'Not found' });
+    if (!file) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
     await dbClient.updateFile(id, { isPublic: true });
-    return res.json({
+    res.json({
       id,
       name: file.name,
       type: file.type,
@@ -142,12 +156,15 @@ class FilesController {
 
   static async putUnpublish(req, res) {
     const { id } = req.params;
-    const { user } = req.user;
+    const { user } = req;
     const userId = user._id;
     const file = await dbClient.findFile({ _id: id, userId });
-    if (!file) return res.status(404).json({ error: 'Not found' });
+    if (!file) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
     await dbClient.updateFile(id, { isPublic: false });
-    return res.json({
+    res.json({
       id,
       userId: userId.toString(),
       name: file.name,
@@ -163,12 +180,13 @@ class FilesController {
     const user = await getUserFromToken(req);
     const userId = user ? user._id.toString() : '';
     const file = await dbClient.findFile({ _id: id });
-    console.log(file);
     if (!file || (!file.isPublic && file.userId.toString() !== userId)) {
-      return res.status(404).json({ error: 'Not found' });
+      res.status(404).json({ error: 'Not found' });
+      return;
     }
     if (file.type === 'folder') {
-      return res.status(400).json({ error: "A folder doesn't have content" });
+      res.status(400).json({ error: "A folder doesn't have content" });
+      return;
     }
     let filePath = file.localPath;
     if (size) {
@@ -176,14 +194,15 @@ class FilesController {
     }
     const isValid = await checkFile(filePath);
     if (!isValid) {
-      return res.status(404).json({ error: 'Not found' });
+      res.status(404).json({ error: 'Not found' });
+      return;
     }
     const absolutePath = await getAbsFilePath(filePath);
     res.setHeader(
       'Content-Type',
       contentType(file.name) || 'text/plain; charset=utf-8',
     );
-    return res.status(200).sendFile(absolutePath);
+    res.status(200).sendFile(absolutePath);
   }
 }
 

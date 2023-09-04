@@ -5,18 +5,25 @@ import dbClient from '../utils/db';
 class UsersController {
   static async postNew(req, res) {
     const { email, password } = req.body;
-    if (!email) return res.status(400).json({ error: 'Missing email' });
-    if (!password) return res.status(400).json({ error: 'Missing password' });
+    if (!email) {
+      res.status(400).json({ error: 'Missing email' });
+      return;
+    }
+    if (!password) {
+      res.status(400).json({ error: 'Missing password' });
+      return;
+    }
     const user = await dbClient.findUser({ email });
     if (user) {
-      return res.status(400).json({ error: 'Already exist' });
+      res.status(400).json({ error: 'Already exist' });
+      return;
     }
     const { insertedId } = await dbClient.createUser(email, password);
-    return res.status(201).json({ email, id: insertedId });
+    res.status(201).json({ email, id: insertedId });
   }
 
   static getMe(req, res) {
-    const { user } = req.user;
+    const { user } = req;
     res.status(200).json({ id: user._id.toString(), email: user.email });
   }
 }
