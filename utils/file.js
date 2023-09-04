@@ -14,7 +14,7 @@ export async function makeDirectory(dir) {
 
 export async function saveFileLocally(baseDir, filename, data) {
   let localPath = filename;
-  if (baseDir === null) {
+  if (baseDir !== null) {
     localPath = join(baseDir, filename);
   }
   await writeFileAsync(localPath, data);
