@@ -105,7 +105,7 @@ class FilesController {
     const { user } = req;
     const userId = user._id;
     const file = await dbClient.findFile({ _id: id, userId });
-    console.log(file);
+
     if (!file) {
       res.status(404).json({ error: 'Not found' });
       return;

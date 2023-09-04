@@ -87,13 +87,13 @@ class DBClient {
   async findFile(_query) {
     const query = _query;
     if (query._id) query._id = myObjectId(query._id);
+    if (query.userId) query.userId = myObjectId(query.userId);
     const file = await this.client.db().collection('files').findOne(query);
     return file;
   }
 
   async findFiles(userId, parentId, skip, pageSize) {
     const filters = { userId };
-    console.log(parentId);
 
     if (parentId !== undefined) {
       if (parentId === '' || parentId === '0') {
@@ -102,8 +102,6 @@ class DBClient {
         filters.parentId = myObjectId(parentId);
       }
     }
-
-    console.log(filters);
 
     const pipeline = [
       {

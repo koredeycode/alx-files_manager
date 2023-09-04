@@ -1,6 +1,9 @@
 /* eslint-disable import/no-named-as-default */
 // import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+import Queue from 'bull';
+
+const userQueue = new Queue('email sending');
 
 class UsersController {
   static async postNew(req, res) {
@@ -19,6 +22,7 @@ class UsersController {
       return;
     }
     const { insertedId } = await dbClient.createUser(email, password);
+    userQueue.add({ userId: insertedId });
     res.status(201).json({ email, id: insertedId });
   }
 
