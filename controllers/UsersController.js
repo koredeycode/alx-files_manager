@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default */
 // import redisClient from '../utils/redis';
-import dbClient from '../utils/db';
 import Queue from 'bull';
+import dbClient from '../utils/db';
 
 const userQueue = new Queue('email sending');
 

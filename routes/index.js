@@ -9,7 +9,7 @@ function mapRoutes(app) {
   app.get('/stats', AppController.getStats);
   app.post('/users', UsersController.postNew);
   app.get('/connect', [basicAuth], AuthController.getConnect);
-  app.get('/disconnect', AuthController.getDisconnect);
+  app.get('/disconnect', [tokenAuth], AuthController.getDisconnect);
   app.get('/users/me', [tokenAuth], UsersController.getMe);
   app.post('/files', [tokenAuth], FilesController.postUpload);
   app.get('/files/:id', [tokenAuth], FilesController.getShow);
